@@ -1,0 +1,9 @@
+Package: site-compatibility
+Version: 1.0.6-1
+Architecture: all
+Maintainer: HamoniKR <pkg@hamonikr.org>
+Installed-Size: 56
+Section: utils
+Priority: optional
+Homepage: https://hamonikr.org
+Description: 웹사이트 호환성 및 공인인증서 사용 지원을 위한 패키지

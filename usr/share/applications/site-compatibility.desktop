@@ -6,8 +6,8 @@ GenericName[ko]=사이트 호환성 지원 프로그램
 Comment=Site Compatibility
 Comment[ko]=은행 카드 보험 및 공인인증서 필요한 사이트 호환성 지원 프로그램
 Icon=/usr/share/icons/hicolor/256x256/apps/site-compatibility.png
-Exec=sudo site-compatibility
-Terminal=true
+Exec=site-compatibility_asroot
+Terminal=false
 Type=Application
 Categories=Web;
 

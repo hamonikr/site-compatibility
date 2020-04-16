@@ -1,363 +1,394 @@
 #!/bin/bash
 
-LOGFILE="/tmp/kp-install.log"
-USERID=`users`
-DEB_PATH="/tmp/deb"
-AUTOSTART="/home/$USERID/.config/autostart"
+# NAME : site-compatibility
+# DESC : 하모니카에서 제공하는 공공기관 및 금융 사이트 호환 프로그램 설치 지원 프로그램
+
+SERVER_URL="apt.hamonikr.org"
+
 SKEL_AUTOSTART="/etc/skel/.config/autostart"
-DATETIME=`date +'%Y-%m-%d %H:%M:%S'`
+DOWN_PATH="/tmp/deb"
+LOG_PATH="/var/log/site-compatibility.log"
+
+echo "[$(date +%Y-%m-%d\ %H:%M:%S)] start site-compatibility" > $LOG_PATH
+
+#PKG_LIST+="ahnlab-safe-transaction
+#anysign4pc
+#crosswebex
+#delfino-g3
+#ipinside-lws
+#magicline4npiz
+#ntsmagicxmlsecuritynp
+#nprotect-online-security
+#raonk-2018
+#veraport-g3
+#xecureweb-unified-plugin
+#"
+
+PKG_LIST+="ahnlab-safe-transaction
+anysign4pc
+delfino-g3
+ipinside-lws
+magicline4npiz
+nprotect-online-security
+raonk-2018
+veraport-g3
+xecureweb-unified-plugin
+"
 
 
-rootcheck_fnt(){
-	if [ ! "$UID" = 0 ]
-	then
-		zenity --error --no-wrap --height=150 --width=250 --title "실행권한 오류" --text="사이트 호환성 지원 설치는 루트 사용자 권한을 필요로 합니다. 
-		
-루트 권한으로 실행시켜 주시기 바랍니다."
-		exit 0
-	fi
+# check permission
+if [[ $UID != 0 ]]
+then
+  clear
+  zenity --error --title="프로그램 실행 권한 오류" \
+    --text="이 프로그램 실행을 위해서 루트 권한이 필요합니다.\n\nsudo $0 를 사용하세요" \
+    --width=300 --height=200
+  exit 1
+fi
+
+
+###### before/after install function start ######
+
+function fnt_before_ahnlab_safe_transaction {
+  echo "fnt_before_ahnlab_safe_transaction"
+
+  sudo apt-get install -y openssl \
+    libnss3-tools \
+    ethtool \
+    dmidecode \
+    hdparm \
+    nautilus \
+    cpuid \
+    dconf-tools \
+    libnetfilter-conntrack3 \
+    libnfnetlink0 \
+    net-tools
+}
+function fnt_after_ahnlab_safe_transaction {
+  echo "fnt_after_ahnlab_safe_transaction"
 }
 
-install_fnt(){
-	echo ""
-	echo "========== install start site-compatibility =========="
-	echo "====== $DATETIME"
+function fnt_before_anysign4pc {
+  echo "fnt_before_anysign4pc"
+}
+function fnt_after_anysign4pc {
+  echo "fnt_after_anysiign4pc"
 
-	echo ""
-	echo "=============================="
-	echo "====== Download Package ======"
-	echo "=============================="
+  for userid in $(ls /home)
+  do
+    sudo cp -r /root/.AnySign4PC /home/$userid/
+    sudo chown -R $userid:$userid /home/$userid/.AnySign4PC
+  done
 
-	wget -O /tmp/site-compatibility.tar.gz https://hamonikr.org/linkfile/site-compatibility-cnt.php?site-compatibility.tar.gz
-	sleep 1
-	tar -xvf /tmp/site-compatibility.tar.gz -C /tmp
-	sleep 1
-
-	echo ""
-	echo "===================================================="
-	echo " install xecureweb-unified-plugin_1.0.5.16_amd64.deb"
-	echo "===================================================="
-	sudo dpkg -i $DEB_PATH/xecureweb-unified-plugin_1.0.5.16_amd64.deb
-	sleep 1
-	
-	
-#	echo ""
-#	echo "=================================================="
-#	echo " 출력물 위변조 방지 프로그램 (MrkAny)"
-#	echo "=================================================="
-#	sudo dpkg -i $DEB_PATH/mdmviewer-markany-2.5.1.0_x64.deb
-#	sleep 1
-	
-	
-#	echo ""
-#	echo "=================================================="
-#	echo " crosswebex install"
-#	echo "=================================================="
-	sudo apt-get install libldap-2.4-2 -y
-	sleep 1
-	sudo apt-get install libgtk-3-0 -y
-	sleep 1
-	sudo apt-get install libwebkitgtk-3.0-0 -y
-	sleep 1
-	sudo apt-get install libwebkitgtk-1.0-0 -y
-	sleep 1
-	sudo apt-get install libgtk2.0-0 -y
-	sleep 1
-	
-	sudo apt-get install libnss3-tools -y
-	sleep 1
-	mkdir -p /home/$USERID/.pki/nssdb
-	#certutil -d /etc/skel/.pki/nssdb -N
-	#certutil -d /home/$USERID/.pki/nssdb -N
-	sleep 1
-	
-	#sudo dpkg -i $DEB_PATH/CrossWebEX_amd64.deb
-	#sleep 5
-	
-	#sudo chmod 755 $AUTOSTART/INISAFECrossWebEX.desktop 
-	#sudo cp $AUTOSTART/INISAFECrossWebEX.desktop $SKEL_AUTOSTART/INISAFECrossWebEX.desktop 
-	
-	
-	echo ""
-	echo "========================="
-	echo " veraport install"
-	echo "========================="
-	
-	sudo dpkg -i $DEB_PATH/veraport-g3_amd64.deb
-	sleep 1
-	
-	sudo cp /usr/share/applications/veraport.desktop $SKEL_AUTOSTART/veraport.desktop
-	sleep 1
-	sudo chmod 755 $SKEL_AUTOSTART/veraport.desktop
-	sleep 1
-	
-	sudo chown root:root $SKEL_AUTOSTART/veraport.desktop
-	sudo cp /usr/share/applications/veraport.desktop $AUTOSTART/veraport.desktop
-	sudo chmod 755 $AUTOSTART/veraport.desktop
-	sudo chown $USERID:$USERID $AUTOSTART/veraport.desktop
-	#veraport 설치 후 리붓필요
-	
-	
-	echo ""
-	echo "======================================================="
-	echo "==astx_u64 개인PC방화벽 프로그램 AhnLab Safe Transaction"
-	echo "========================================================"
-
-	sudo apt-get install openssl -y
-	sleep 1
-	sudo apt-get install libnss3-tools -y
-	sleep 1
-	sudo apt-get install ethtool -y
-	sleep 1
-	sudo apt-get install dmidecode -y
-	sleep 1
-	sudo apt-get install hdparm -y
-	sleep 1
-
-#	sudo apt-get install libldap-2.4-2 libgtk-3-0 -y
-	sleep 1
-	
-#	sudo apt-get install dconf-editor -y
-	sleep 1
-#	sudo apt-get install libcurl3 -y
-	sleep 1
-
-#	sudo apt-get install libgnome-autoar-0-0 -y
-	sleep 1
-#	sudo apt-get install libtracker-sparql-2.0-0 -y
-	sleep 1
-	sudo apt-get install nautilus -y
-	sleep 1
-	
-	sudo apt-get install cpuid -y
-	sleep 1
-	sudo apt-get install dconf-tools -y
-	sleep 1
-	sudo apt-get install libnetfilter-conntrack3 -y
-	sleep 1
-	sudo apt-get install libnfnetlink0 -y
-	sleep 1
-	sudo apt-get install net-tools -y
-	sleep 1
-	
-	sudo dpkg -i $DEB_PATH/astx_u64.deb
-	sleep 1
-	
-	
-	echo ""
-	echo "=================================================="
-	echo " 파일전송(KUPLOAD)  raonk-2018_amd64.deb"
-	echo "================================================="
-	sudo dpkg -i $DEB_PATH/raonk-2018_amd64.deb
-	sleep 1
-	
-	
-	echo ""
-	echo "==================================================="
-	echo "공인인증서 (MAGIC-PKI) magicline4nx"
-	echo "==================================================="
-	sudo dpkg -i $DEB_PATH/magicline4nx_x86_64.deb
-	sleep 1
-	
-	sudo cp /usr/share/applications/magicline4nx.desktop $AUTOSTART/magicline4nx.desktop
-	sudo cp /usr/share/applications/magicline4nx.desktop $SKEL_AUTOSTART/magicline4nx.desktop
-	sudo chown $USERID:$USERID $AUTOSTART/magicline4nx.desktop
-	sudo chmod +755 $AUTOSTART/magicline4nx.desktop
-	sudo chmod +755 $SKEL_AUTOSTART/magicline4nx.desktop
-	
-	
-	echo ""
-	echo "==================================================="
-	echo "공인인증서 (MAGIC-PKI) magicline4npiz"
-	echo "==================================================="
-	sudo dpkg -i $DEB_PATH/magicline4npiz64_20160503.deb
-	sleep 1
-	
-	sudo cp /usr/share/applications/magicline4npiz.desktop $AUTOSTART/magicline4npiz.desktop
-	sudo cp /usr/share/applications/magicline4npiz.desktop $SKEL_AUTOSTART/magicline4npiz.desktop
-	sudo chown $USERID:$USERID $AUTOSTART/magicline4npiz.desktop
-	sudo chmod +755 $AUTOSTART/magicline4npiz.desktop
-	sudo chmod +755 $SKEL_AUTOSTART/magicline4npiz.desktop
-	
-	
-	echo ""
-	echo "=========================================================="
-	echo "전자서명(magic-xml) ntsmagicxmlsecuritynp_x86_64.deb"
-	echo "=========================================================="
-	sudo dpkg -i $DEB_PATH/ntsmagicxmlsecuritynp_x86_64.deb
-	sleep 1
-	
-	sudo cp /usr/share/applications/ntsmagicxmlsecuritynp.desktop $SKEL_AUTOSTART/ntsmagicxmlsecuritynp.desktop
-	sudo cp /usr/share/applications/ntsmagicxmlsecuritynp.desktop $AUTOSTART/ntsmagicxmlsecuritynp.desktop
-	sudo chown $USERID:$USERID $AUTOSTART/ntsmagicxmlsecuritynp.desktop
-	sudo chmod +755 $AUTOSTART/ntsmagicxmlsecuritynp.desktop
-	sudo chmod +755 $SKEL_AUTOSTART/ntsmagicxmlsecuritynp.desktop
-	
-	
-	echo ""
-	echo "=========================================================="
-	echo " 부정접속차단(IPINSIDE)"
-	echo "=========================================================="
-	sudo dpkg -i $DEB_PATH/ipinside-lws_3.0.0.8_amd64.deb
-	sleep 1
-	
-	sudo chown $USERID:$USERID $AUTOSTART/ipinside-lws.desktop
-	sudo chmod +755 $AUTOSTART/ipinside-lws.desktop
-	sudo cp $AUTOSTART/ipinside-lws.desktop $SKEL_AUTOSTART/ipinside-lws.desktop
-	
-	##.conf/autostart의 ipinside-lws.desktop 파일 수정
-	#echo "Exec=/opt/interezen/ipinside/LWSDaemon" >> $AUTOSTART/ipinside-lws.desktop
-	
-	
-	echo ""
-	echo "=========================================================="
-	echo "인증서 보안 프로그램 anysign4pc_linux_x86_64.deb"
-	echo "=========================================================="
-	sudo dpkg -i $DEB_PATH/anysign4pc_linux_x86_64.deb
-	sleep 1
-	
-	sudo systemctl daemon-reload
-	sleep 1
-	sudo systemctl enable anysign.service
-	sleep 1
-	sudo systemctl start anysign.service
-	sleep 1
-	
-	#/etc/rc.d/init.d/astxdaemon start
-	##Exec=/opt/interezen/ipinside/LWSDaemon 추가
-	#service --status-all
-	#service AnySign.linux.x64 status
-	#service AnySign.linux.x64 start
-	#/var/lib/dpkg/info/anysign4pc.postinst
-	
-	
-	echo ""
-	echo "=========================================================="
-	echo "공인인증서이용 (WizIN-Delfino)"
-	echo "=========================================================="
-	sudo dpkg -i $DEB_PATH/delfino-g3_amd64.deb
-	sleep 1
-	
-	sudo cp /usr/share/applications/delfino.desktop $AUTOSTART/
-	sudo cp /usr/share/applications/delfino.desktop $SKEL_AUTOSTART/
-	sudo chown $USERID:$USERID $AUTOSTART/delfino.desktop
-	sudo chmod +755 $AUTOSTART/delfino.desktop
-	sudo chmod +755 $SKEL_AUTOSTART/delfino.desktop
-	
-	#http://no1linux.org/hottips/28760
-	
-
-	echo ""
-	echo "========== install finished site-compatibility =========="
-	echo "====== $DATETIME"
-
-	if zenity --question --no-wrap --height=150 --width=280 --title "사이트 호환성 지원 설치 완료" --text="사이트 호환성 지원 설치가 완료되었습니다.\n\n재부팅 이후 사이트 호환성 적용이 시작됩니다.\n\n재부팅 하시겠습니까?"
-	then
-		reboot
-	else
-		exit 0
-	fi
+  sudo systemctl daemon-reload
+  sleep 1
+  sudo systemctl enable anysign.service
+  sleep 1
+  sudo systemctl start anysign.service
 }
 
-delete_fnt(){
-	echo ""
-	echo "========== deleter start site-compatibility =========="
-	echo "====== $DATETIME"
+function fnt_before_crosswebex {
+  echo "fnt_before_crosswebex"
 
-	if [ ! "" = "`dpkg -l | grep xecureweb-unified-plugin`" ]; then
-		sudo dpkg --purge xecureweb-unified-plugin
-	fi
+  sudo apt-get install -y libldap-2.4-2 \
+    libgtk-3-0 \
+    libwebkitgtk-3.0-0 \
+    libwebkitgtk-1.0-0 \
+    libgtk2.0-0 \
+    libnss3-tools
+}
+function fnt_after_crosswebex {
+  echo "fnt_after_crosswebex"
+}
 
-	if [ ! "" = "`dpkg -l | grep mdmviewer-markany`" ]; then
-		sudo dpkg --purge mdmviewer-markany
-	fi
+function fnt_before_delfino_g3 {
+  echo "fnt_before_delfino_g3"
 
-#	if [ ! "" = "`dpkg -l | grep crosswebex`" ]; then
-#		sudo dpkg --purge crosswebex
-#	fi
+  if [[ ! -d /var/lib/update-notifier ]]
+  then
+    mkdir -p /var/lib/update-notifier
+  fi
+}
+function fnt_after_delfino_g3 {
+  echo "fnt_after_delfino_g3"
 
-	if [ ! "" = "`dpkg -l | grep veraport-g3`" ]; then
-		sudo dpkg --purge veraport-g3
-		sudo rm $SKEL_AUTOSTART/veraport.desktop
-		sudo rm $AUTOSTART/veraport.desktop
-	fi
+  fnt_copy_desktop_file "delfino.desktop"
+}
 
-	if [ ! "" = "`dpkg -l | grep ahnlab-safe-transaction`" ]; then
-		sudo dpkg --purge ahnlab-safe-transaction
-	fi
+function fnt_before_ipinside_lws {
+  echo "fnt_before_ipinside_lws"
+}
+function fnt_after_ipinside_lws {
+  echo "fnt_after_ipinside_lws"
 
-	if [ ! "" = "`dpkg -l | grep raonk-2018`" ]; then
-		sudo dpkg --purge raonk-2018
-	fi
+  fnt_copy_desktop_file "ipinside-lws.desktop"
+}
 
-	if [ ! "" = "`dpkg -l | grep magicline4nx`" ]; then
-		sudo dpkg --purge magicline4nx
-		sudo rm $AUTOSTART/magicline4nx.desktop
-		sudo rm $SKEL_AUTOSTART/magicline4nx.desktop
-	fi
+function fnt_before_magicline4nx {
+  echo "fnt_before_magicline4nx"
+}
+function fnt_after_magicline4nx {
+  echo "fnt_after_magicline4nx"
 
-	if [ ! "" = "`dpkg -l | grep magicline4npiz`" ]; then
-		sudo dpkg --purge magicline4npiz
-		sudo rm $AUTOSTART/magicline4npiz.desktop
-		sudo rm $SKEL_AUTOSTART/magicline4npiz.desktop
-	fi
+  fnt_copy_desktop_file "magicline4nx.desktop"
+}
 
-	if [ ! "" = "`dpkg -l | grep ntsmagicxmlsecuritynp`" ]; then
-		sudo dpkg --purge ntsmagicxmlsecuritynp
-		sudo rm $SKEL_AUTOSTART/ntsmagicxmlsecuritynp.desktop
-		sudo rm $AUTOSTART/ntsmagicxmlsecuritynp.desktop
-	fi
+function fnt_before_magicline4npiz {
+  echo "fnt_before_magicline4npiz"
+}
+function fnt_after_magicline4npiz {
+  echo "fnt_after_magicline4npiz"
 
-	if [ ! "" = "`dpkg -l | grep ipinside-lws`" ]; then
-		sudo dpkg --purge ipinside-lws
-		sudo rm $SKEL_AUTOSTART/ipinside-lws.desktop
-	fi
+  fnt_copy_desktop_file "magicline4npiz.desktop"
+}
 
-	if [ ! "" = "`dpkg -l | grep anysign4pc`" ]; then
-		sudo dpkg --purge anysign4pc
-	fi
+function fnt_before_ntsmagicxmlsecuritynp {
+  echo "fnt_before_ntsmagicxmlsecuritynp"
+}
+function fnt_after_ntsmagicxmlsecuritynp {
+  echo "fnt_after_ntsmagicxmlsecuritynp"
 
-	if [ ! "" = "`dpkg -l | grep delfino-g3`" ]; then
-		sudo dpkg --purge delfino-g3
-		sudo rm $AUTOSTART/delfino.desktop
-		sudo rm $SKEL_AUTOSTART/delfino.desktop
-	fi
+  fnt_copy_desktop_file "ntsmagicxmlsecuritynp.desktop"
+}
 
-	echo ""
-	echo "========== deleter finished site-compatibility =========="
-	echo "====== $DATETIME"
+function fnt_before_nprotect_online_security {
+  echo "fnt_before_nprotect_online_security"
+}
+function fnt_after_nprotect_online_security {
+  echo "fnt_after_nprotect_online_security"
+}
 
-	if zenity --question --no-wrap --height=150 --width=280 --title "사이트 호환성 지원 삭제 완료" --text="사이트 호환성 지원 삭제가 완료되었습니다.\n\n원활한 제거를 위해 재부팅 해 주시기 바랍니다.\n\n재부팅 하시겠습니까?"
+function fnt_before_raonk_2018 {
+  echo "fnt_before_raonk_2018"
+}
+function fnt_after_raonk_2018 {
+  echo "fnt_after_raonk_2018"
+
+  fnt_copy_desktop_file "raonk.desktop"
+  fnt_copy_desktop_file "raonkupload.desktop"
+}
+
+function fnt_before_veraport_g3 {
+  echo "fnt_before_veraport_g3"
+}
+function fnt_after_veraport_g3 {
+  echo "fnt_after_veraport_g3"
+
+  fnt_copy_desktop_file "veraport.desktop"
+}
+
+function fnt_before_xecureweb_unified_plugin {
+  echo "fnt_before_xecureweb_unified_plugin"
+  
+  if [[ ! -d /usr/lib64/mozilla/plugins ]]
+  then
+    mkdir -p /usr/lib64/mozilla/plugins
+  fi
+}
+function fnt_after_xecureweb_unified_plugin {
+  echo "fnt_after_xecureweb_unified_plugin"
+}
+
+###### before/after install function end ######
+
+
+function fnt_copy_desktop_file {
+  sudo cp /usr/share/applications/$1 $SKEL_AUTOSTART/$1
+  sudo chmod 755 $SKEL_AUTOSTART/$1
+  sudo chown root:root $SKEL_AUTOSTART/$1
+
+  for userid in $(ls /home)
+  do
+    AUTOSTART="/home/$userid/.config/autostart"
+
+    sudo cp /usr/share/applications/$1 $AUTOSTART/$1
+    sudo chmod 755 $AUTOSTART/$1
+    sudo chown $userid:$userid $AUTOSTART/$1
+  done
+}
+
+function fnt_delete_desktop_file {
+  sudo rm $SKEL_AUTOSTART/$1
+
+  for userid in $(ls /home)
+  do
+    sudo rm /home/$userid/.config/autostart/$1
+  done
+}
+
+
+function fnt_pkg_install {
+  pkg_name=$(echo $1 | sed 's/-/_/g')
+
+  # preinst
+  fnt_before_$pkg_name
+
+  # install
+  sudo apt-get install -y $1
+
+  # postinst
+  fnt_after_$pkg_name
+}
+
+function fnt_pkg_remove {
+  sudo apt-get --purge remove -y $1
+}
+
+
+function fnt_ck_network {
+  nslookup $SERVER_URL | grep authoritative > /dev/null 2>&1
+  if [ $? -eq 1 ]
+  then
+    zenity --error --title="저장소 접속 불가" \
+      --text="하모니카 저장소에 접속할 수 없습니다.\n인터넷 연결을 확인해 주세요.\n\n인터넷 연결이 이상이 없는 경우\n>하모니카 커뮤니티에 문의해 주시기 바랍니다.\n\n하모니카 커뮤니티 : https://hamonikr.org" \
+      --width=300 --height=200
+    exit 1
+  fi
+}
+
+function fnt_create_menu {
+  choice=$(zenity --list --radiolist \
+    --text="설치 혹은 삭제 항목을 선택후 확인 버튼을 클릭하세요" \
+    --column="선택" --column="항목" \
+    "install" "설치" "remove" "삭제" \
+    --width="300" --height="200" \
+    --ok-label="확인" \
+    --cancel-label="종료")
+}
+
+
+function fnt_create_list_menu {
+  if [[ "$1" == "" ]]; then return; fi
+
+  if [[ "$1" == "install" ]]
+  then
+
+    ok_lbl="설치"
+
+    # installed list
+    for pkg in $PKG_LIST
+    do
+      if [[ "" != "$(dpkg -l $pkg)" ]]
+      then
+        local AllPkgsArr+=("" "$pkg" "$(dpkg -l $pkg | grep ii | awk '{print $3}')" "O")
+      fi
+    done
+
+    # not installed list
+    for pkg in $PKG_LIST
+    do
+      if [[ "" == "$(dpkg -l $pkg)" ]]
+      then
+        local AllPkgsArr+=("" "$pkg" "-" "-")
+      fi
+    done
+
+  elif [[ "$1" == "remove" ]]
+  then
+
+    ok_lbl="삭제"
+
+    # installed list
+    for pkg in $PKG_LIST
+    do
+      if [[ "" != "$(dpkg -l $pkg)" ]]
+      then
+        local AllPkgsArr+=("" "$pkg" "$(dpkg -l $pkg | grep ii | awk '{print $3}')" "O")
+      fi
+    done
+
+  fi
+
+  select_pkgs=$(zenity --list --checklist \
+    --text="$ok_lbl를 원하는 프로그램을 선택하신 후 $ok_lbl 버튼을 클릭하세요." \
+    --column "선택" --column "패지키명" --column "버전" --column "설치유무" \
+    "${AllPkgsArr[@]}" \
+    --width=360 --height=480 \
+    --ok-label="$ok_lbl" \
+    --cancel-label="취소"
+  )
+}
+
+
+function main {
+  while true
+  do
+    # select install/remove
+    fnt_create_menu
+  
+    if [[ "설치" == "$choice" ]]
+    then
+   
+      # check server connection
+      fnt_ck_network || echo "[$(date +%Y-%m-%d\ %H:%M:%S)][Err] Failed network checking" > $LOG_PATH
+ 
+      sudo apt-get update || {
+        echo "[$(date +%Y-%m-%d\ %H:%M:%S)][Err] Failed apt-get update" > $LOG_PATH
+
+        zenity --error --title="업데이트 실패" \
+          --text="업데이트 목록을 갱신을 실패하였습니다.\n잠시후 다시 시도해 주시기 바랍니다.\n\n동일한 문제가 반복적으로 발생하면\n하모니카 커뮤니티로 문의해 주시기 바랍니다.\n\n하모니카 커뮤니티 : https://hamonikr.org" \
+          --width=300 --height=200
+        exit
+      }
+
+      # create menu
+      fnt_create_list_menu "install"
+
+    elif [[ "삭제" == "$choice" ]]
+    then
+  
+      # create menu
+      fnt_create_list_menu "remove"
+ 
+    else
+      exit
+    fi
+
+
+    # 목록확인
+    IFS='|' read -ra s_pkgs <<< "$select_pkgs"
+
+    # 설치유뮤확인
+    for pkg in "${s_pkgs[@]}"
+    do
+
+      if [[ "설치" == "$choice" ]]
+      then
+        ck=$(dpkg -l $pkg | grep ii)
+
+        if [[ "" == $ck ]]
         then
-                reboot
-	else
-		exit 0
+
+          fnt_pkg_install $pkg
+
         fi
-}
+      fi
 
+      if [[ "삭제" == "$choice" ]]
+      then
 
-main(){
-	rootcheck_fnt
+        fnt_pkg_remove $pkg
 
-#	echo "1) 설치"
-#	echo "2) 삭제"
-#	echo "3) 종료"
-#	read ipt;
-#	
-#	case $ipt in
-#		1) install_fnt | tee -a /var/log/site-compatibility.log	;;
-#		2) delete_fnt | tee -a /var/log/site-compatibility.log ;;
-#		3) exit 0
-#	esac
+      fi
 
-if zenity --question --no-wrap --height=150 --width=280 --title "사이트 호환성 지원 설치" --text="은행 카드 보험 그 외 공인인증서가 필요한 사이트 호환성 지원을 돕기 위해 제작되었습니다.\n\n지원되는 사이트 목록은 하모니카 커뮤니티 사이트 호환성 목록 게시글을 참고해 주시기 바랍니다.\n\n설치를 진행하시겠습니까?"
-        then
-		install_fnt | tee -a /var/log/site-compatibility.log
-	else
-		zenity --info --no-wrap --height=150 --width=280 --title "사이트 호환성 지원 설치" --text="취소하셨습니다. 설치 진행를 종료합니다."
-		exit 0
-        fi
+    done
+
+    # 취소
+    if [[ 0 -lt "${#s_pkgs[@]}" ]]
+    then
+
+      if zenity --question --no-wrap \
+        --height=150 --width=280 \
+        --title "$choice 완료" \
+        --text="사이트 호환성 지원 프로그램 $choice가 완료되었습니다.\n\n재부팅 이후 적용 됩니다.\n\n재부팅 하시겠습니까?"
+      then
+        reboot
+      else
+        exit
+      fi
+    fi
+
+  done
 }
 
 main
-

@@ -1,8 +1,8 @@
 Package: site-compatibility
-Version: 1.0.6-1
+Version: 1.9.4-1
 Architecture: all
 Maintainer: HamoniKR <pkg@hamonikr.org>
-Installed-Size: 56
+Installed-Size: 54
 Section: utils
 Priority: optional
 Homepage: https://hamonikr.org

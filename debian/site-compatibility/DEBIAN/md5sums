@@ -1,4 +1,5 @@
-574e5d990a0aaaf76e5f413ce894030a  usr/bin/site-compatibility
-7174774833dc0214b1a12701c5055408  usr/share/applications/site-compatibility.desktop
-25820a5687b6c9b8167b1c51ff9357cb  usr/share/doc/site-compatibility/changelog.Debian.gz
+2cde554457cbf007a0cd9ec8339c7f41  usr/bin/site-compatibility
+3f4239622a57eababdd56a4a283578f6  usr/bin/site-compatibility_asroot
+dad6cb3250164e369bbe063717042f7f  usr/share/applications/site-compatibility.desktop
+b27d1512b600a425288949119d2efccd  usr/share/doc/site-compatibility/changelog.Debian.gz
 13822f9f62e5ff53b8da075fbaff0634  usr/share/icons/hicolor/256x256/apps/site-compatibility.png

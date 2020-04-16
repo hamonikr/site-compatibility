@@ -1,3 +1,10 @@
+site-compatibility (1.9.4-1) bionic; urgency=medium
+
+  * 설치/삭제 지원 GUI
+
+ -- HamoniKR <pkg@hamonikr.org>  Tue, 31 Mar 2020 21:03:14 +0900
+
+
 site-compatibility (1.0.6-1) bionic; urgency=medium
 
   * 소스공개를 위한 수정
